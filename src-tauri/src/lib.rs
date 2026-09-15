@@ -41,7 +41,7 @@ use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use tauri::{
-    AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, State, WebviewWindow,
+    AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, State, Webview, WebviewWindow,
     WindowEvent,
 };
 
@@ -125,6 +125,19 @@ struct Point {
 fn win(app: &AppHandle, label: &str) -> Result<WebviewWindow, String> {
     app.get_webview_window(label)
         .ok_or_else(|| format!("window '{label}' not found"))
+}
+
+/// Hiding the OS window leaves the webview itself marked visible, so its page
+/// keeps animating unthrottled off-screen — hide both, and show both. (Not used
+/// for the toast: it must stay live to react to a nudge the moment it lands.)
+fn hide_surface(w: &WebviewWindow) {
+    let _ = w.hide();
+    let _ = AsRef::<Webview>::as_ref(w).hide();
+}
+
+fn show_surface(w: &WebviewWindow) -> tauri::Result<()> {
+    let _ = AsRef::<Webview>::as_ref(w).show();
+    w.show()
 }
 
 // ============================ commands ============================
@@ -346,7 +359,7 @@ fn activate_bundle(bundle_id: &str) {
 /// click-away has already moved focus itself.
 fn hide_panel_restoring(app: &AppHandle) {
     if let Ok(panel) = win(app, "panel") {
-        let _ = panel.hide();
+        hide_surface(&panel);
     }
     let prev = app.state::<AppState>().prev_app.lock().unwrap().take();
     if let Some(bundle) = prev {
@@ -383,7 +396,7 @@ fn toggle_panel_impl(app: &AppHandle) -> Result<(), String> {
         }
     }
     place_panel(app);
-    panel.show().map_err(|e| e.to_string())?;
+    show_surface(&panel).map_err(|e| e.to_string())?;
     panel.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -508,7 +521,7 @@ async fn open_dashboard(app: AppHandle) -> Result<(), String> {
         }
     };
     let _ = dash.unminimize();
-    dash.show().map_err(|e| e.to_string())?;
+    show_surface(&dash).map_err(|e| e.to_string())?;
     dash.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -992,16 +1005,16 @@ fn toggle_widget(app: &AppHandle, item: &tauri::menu::MenuItem<tauri::Wry>) {
         return;
     };
     if avatar.is_visible().unwrap_or(true) {
-        let _ = avatar.hide();
+        hide_surface(&avatar);
         if let Some(p) = app.get_webview_window("panel") {
-            let _ = p.hide();
+            hide_surface(&p);
         }
         if let Some(t) = app.get_webview_window("toast") {
             let _ = t.hide();
         }
         let _ = item.set_text("Show widget");
     } else {
-        let _ = avatar.show();
+        let _ = show_surface(&avatar);
         let _ = item.set_text("Hide widget");
     }
 }
@@ -1115,8 +1128,29 @@ fn spawn_updater(app: AppHandle) {
 
 // ============================ entrypoint ============================
 
+/// WebView2 reads this env var when it creates its environment — before the
+/// first window — so the flag has to land ahead of the Tauri builder.
+#[cfg(target_os = "windows")]
+fn apply_software_rendering(identifier: &str) {
+    let Some(appdata) = std::env::var_os("APPDATA") else {
+        return;
+    };
+    if !Config::load(&PathBuf::from(appdata).join(identifier)).software_rendering {
+        return;
+    }
+    let mut args = std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS").unwrap_or_default();
+    if !args.is_empty() {
+        args.push(' ');
+    }
+    args.push_str("--disable-gpu");
+    std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", args);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let ctx = tauri::generate_context!();
+    #[cfg(target_os = "windows")]
+    apply_software_rendering(&ctx.config().identifier);
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
@@ -1173,12 +1207,15 @@ pub fn run() {
 
             // Panel dismisses itself when it loses focus (tap-away).
             if let Some(panel) = app.get_webview_window("panel") {
+                // Its window starts hidden, its webview doesn't — suspend that
+                // too, or an invisible page renders for the whole session.
+                hide_surface(&panel);
                 let h = handle.clone();
                 panel.on_window_event(move |event| {
                     if let WindowEvent::Focused(focused) = event {
                         if !*focused {
                             if let Some(p) = h.get_webview_window("panel") {
-                                let _ = p.hide();
+                                hide_surface(&p);
                                 if let Some(st) = h.try_state::<AppState>() {
                                     *st.panel_last_hidden.lock().unwrap() = Some(Instant::now());
                                 }
@@ -1312,6 +1349,6 @@ pub fn run() {
             codex_locate::codex_locate_status,
             codex_locate::set_codex_locate_enabled,
         ])
-        .run(tauri::generate_context!())
+        .run(ctx)
         .expect("error while running tauri application");
 }

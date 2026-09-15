@@ -219,6 +219,9 @@
     transform: translateY(-3px);
   }
 
+  /* Every state glow steps rather than tweens: a smooth filter animation
+     repaints on every vsync forever, which keeps laptop GPUs from idling. */
+
   /* idle → sleeping: curled cat, slow breathing sage glow, drifting Zs */
   .sprite.sleeping {
     --fw: 256; /* sleeping-sprite-sheet.png: 1024×196, 4 frames → 256×196 */
@@ -227,7 +230,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       sleep-frames 2.8s steps(4) infinite,
-      sleep-glow 4.5s var(--ease) infinite;
+      sleep-glow 4.5s steps(18) infinite;
   }
   @keyframes sleep-frames {
     to {
@@ -252,7 +255,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       run-frames 0.50s steps(4) infinite,
-      run-glow 1.6s var(--ease) infinite;
+      run-glow 1.6s steps(12) infinite;
   }
   @keyframes run-frames {
     to {
@@ -281,7 +284,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       shock-frames 0.7s steps(5) infinite,
-      shock-glow 0.9s var(--ease) infinite;
+      shock-glow 0.9s steps(10) infinite;
   }
   @keyframes shock-frames {
     to {
@@ -302,7 +305,7 @@
   .tablo-wrap.needs-input .sprite.shocked {
     animation:
       shock-frames 0.5s steps(5) infinite,
-      shock-glow-urgent 0.85s var(--ease) infinite;
+      shock-glow-urgent 0.85s steps(10) infinite;
   }
   @keyframes shock-glow-urgent {
     0%,

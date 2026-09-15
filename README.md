@@ -264,3 +264,7 @@ bun run tauri build    # produce a bundle
 Config is stored at the Tauri app-config dir — on macOS,
 `~/Library/Application Support/com.projektdreamscape.tablo/config.json` — and
 holds the avatar position, thresholds, timers, theme, and toggles.
+
+On Windows, `"softwareRendering": true` in that file makes the webviews render
+without GPU acceleration from the next launch — for hybrid-graphics laptops
+where the discrete GPU otherwise never drops back to an idle power state.
