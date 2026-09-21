@@ -2,7 +2,7 @@
 # tablo installer — macOS & Linux. Pulls a build from GitHub Releases, verifies
 # its published SHA-256 checksum, and installs it. Fails closed: a missing or
 # mismatched checksum aborts before anything is installed or made executable.
-#   curl -fsSL https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.1/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.2/install.sh | bash
 # Pin a specific version with TABLO_VERSION=tablo-vX.Y.Z; otherwise the latest
 # release is used. No build toolchain required.
 set -euo pipefail

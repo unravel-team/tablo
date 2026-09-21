@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "tablo",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "identifier": "com.projektdreamscape.tablo",
   "build": {
     "beforeDevCommand": "bun run dev",

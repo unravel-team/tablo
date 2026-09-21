@@ -4019,7 +4019,7 @@ dependencies = [
 
 [[package]]
 name = "tablo"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "dirs 5.0.1",
  "getrandom 0.2.17",

@@ -1,7 +1,7 @@
 # tablo installer — Windows. Pulls a build from GitHub Releases, verifies its
 # published SHA-256 checksum, then runs the installer. Fails closed: a missing or
 # mismatched checksum aborts and removes the download before anything runs.
-#   irm https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.1/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.2/install.ps1 | iex
 # Pin a specific version with $env:TABLO_VERSION = 'tablo-vX.Y.Z'.
 $ErrorActionPreference = 'Stop'
 
