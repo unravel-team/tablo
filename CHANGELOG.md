@@ -12,6 +12,29 @@ copy of tablo sees when it checks for updates. A tag with no matching section
 here fails the release before anything is built. Write the entry as you merge,
 not at tag time.
 
+## [2.2.2] - 2026-09-21
+
+2.2.2 stops tablo from using the GPU while it is sitting idle. On laptops this
+was enough to keep the fans up with the cat asleep.
+
+### Added
+
+- **Software rendering option (Windows).** On a hybrid graphics laptop whose
+  discrete GPU still refuses to idle, set `"softwareRendering": true` in
+  `config.json` to run tablo's windows without GPU acceleration. Off by default.
+
+### Fixed
+
+- **Hidden windows no longer render.** The panel drew its session list off
+  screen from the moment tablo launched, even if you never opened it, and kept
+  animating there for the whole session. Hidden windows are now suspended, which
+  cut tablo's idle GPU use by about 4x on the Windows laptop this was reported
+  from.
+- **The cat's glow is cheaper to animate on Windows.** There the breathing glow
+  redrew on every frame for as long as tablo ran. It now updates a few times a
+  second, which looks the same and leaves the GPU idle in between. macOS and
+  Linux keep the smooth glow, which is already the cheaper option there.
+
 ## [2.2.1] - 2026-08-17
 
 2.2.1 fixes the cat's caution pip, which only ever counted tool approvals and

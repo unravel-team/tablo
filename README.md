@@ -24,13 +24,13 @@ locally.
 **macOS / Linux**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.1/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.2/install.sh | bash
 ```
 
 **Windows** (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.1/install.ps1 | iex
+irm https://raw.githubusercontent.com/unravel-team/tablo/tablo-v2.2.2/install.ps1 | iex
 ```
 
 tablo isn't code-signed / notarized yet, so after verifying the download the
