@@ -59,6 +59,14 @@ export async function initStore() {
   onState((s) => {
     store.snap = s;
   }).catch(() => {});
+  // A hidden webview is suspended, so it can miss updates while away — re-read
+  // the snapshot whenever a surface comes back into view.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    getSnapshot()
+      .then((s) => (store.snap = s))
+      .catch(() => {});
+  });
   // Follow theme flips made in any other window.
   onTheme((theme) => {
     store.config.theme = theme as "dark" | "light";

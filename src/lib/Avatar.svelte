@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
   import { store } from "./state.svelte";
   import { beginDrag, moveAvatar, endDrag, togglePanel } from "./bridge";
   import { prefs } from "./prefs.svelte";
@@ -26,6 +27,10 @@
   let workCount = $derived(
     store.snap.sessions.filter((x) => !pendingIds.has(x.id) && x.activityKind !== "waiting").length,
   );
+
+  // Chromium repaints a tweened filter on every vsync, so the glows step there.
+  // WebKit runs the same animation off the main thread, where stepping costs more.
+  const stepped = browser && navigator.userAgent.includes("Windows");
 
   // Alarm startles the cat briefly, then it falls back to trot/sleep; a new permission re-startles.
   const SHOCK_MS = 7000;
@@ -148,7 +153,12 @@
   onpointermove={onMove}
   onpointerup={onUp}
 >
-  <div class="tablo-wrap" class:needs-input={needsInput} class:still={!prefs.animations}>
+  <div
+    class="tablo-wrap"
+    class:needs-input={needsInput}
+    class:still={!prefs.animations}
+    class:stepped
+  >
     {#if display === "idle" && transitioning}
       <!-- running → sleeping: one-shot curl-down, then the sleeping loop -->
       <div
@@ -194,6 +204,14 @@
     position: relative;
     display: inline-grid;
     place-items: center;
+    --sleep-timing: var(--ease);
+    --run-timing: var(--ease);
+    --shock-timing: var(--ease);
+  }
+  .tablo-wrap.stepped {
+    --sleep-timing: steps(18);
+    --run-timing: steps(12);
+    --shock-timing: steps(10);
   }
 
   /* real cat sprite. The sheet is a single row of `--frames` cells played with
@@ -227,7 +245,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       sleep-frames 2.8s steps(4) infinite,
-      sleep-glow 4.5s var(--ease) infinite;
+      sleep-glow 4.5s var(--sleep-timing) infinite;
   }
   @keyframes sleep-frames {
     to {
@@ -252,7 +270,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       run-frames 0.50s steps(4) infinite,
-      run-glow 1.6s var(--ease) infinite;
+      run-glow 1.6s var(--run-timing) infinite;
   }
   @keyframes run-frames {
     to {
@@ -281,7 +299,7 @@
     background-size: calc(var(--size) * var(--frames)) 100%;
     animation:
       shock-frames 0.7s steps(5) infinite,
-      shock-glow 0.9s var(--ease) infinite;
+      shock-glow 0.9s var(--shock-timing) infinite;
   }
   @keyframes shock-frames {
     to {
@@ -302,7 +320,7 @@
   .tablo-wrap.needs-input .sprite.shocked {
     animation:
       shock-frames 0.5s steps(5) infinite,
-      shock-glow-urgent 0.85s var(--ease) infinite;
+      shock-glow-urgent 0.85s var(--shock-timing) infinite;
   }
   @keyframes shock-glow-urgent {
     0%,

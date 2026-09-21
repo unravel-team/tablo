@@ -128,6 +128,9 @@ pub struct Config {
     /// true after the first launch wires it in, so a later user-disable sticks
     /// and we never silently re-enable it behind their back.
     pub locate_default_applied: bool,
+    /// Windows only: render the webviews without GPU acceleration. Off by
+    /// default; for hybrid-graphics laptops whose discrete GPU never idles.
+    pub software_rendering: bool,
 }
 
 impl Default for Config {
@@ -168,6 +171,7 @@ impl Default for Config {
             panel_shortcut_enabled: true,
             last_seen_version: String::new(),
             locate_default_applied: false,
+            software_rendering: false,
         }
     }
 }
