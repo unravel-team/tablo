@@ -30,9 +30,10 @@ was enough to keep the fans up with the cat asleep.
   animating there for the whole session. Hidden windows are now suspended, which
   cut tablo's idle GPU use by about 4x on the Windows laptop this was reported
   from.
-- **The cat's glow is cheaper to animate.** The breathing glow redrew on every
-  frame for as long as tablo ran. It now updates a few times a second, which
-  looks the same and leaves the GPU idle in between.
+- **The cat's glow is cheaper to animate on Windows.** There the breathing glow
+  redrew on every frame for as long as tablo ran. It now updates a few times a
+  second, which looks the same and leaves the GPU idle in between. macOS and
+  Linux keep the smooth glow, which is already the cheaper option there.
 
 ## [2.2.1] - 2026-08-17
 
